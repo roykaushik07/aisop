@@ -49,7 +49,15 @@ class AIOpsAgent:
 
         print(f"✓ Matched SOP: {sop.name}")
         print(f"  Description: {sop.description}")
-        print(f"  Steps: {len(sop.steps)}\n")
+        print(f"  Steps: {len(sop.steps)}")
+
+        # Show "do not" actions if present
+        if hasattr(sop, 'do_not') and sop.do_not:
+            print(f"\n  ⚠️  Actions to Avoid:")
+            for item in sop.do_not:
+                print(f"    {item['requirement']}: {item['action']}")
+                print(f"      Reason: {item['reason']}")
+        print()
 
         # Step 2: Execute SOP workflow
         results = self._execute_sop_workflow(sop, user_query)
@@ -76,7 +84,14 @@ class AIOpsAgent:
         }
 
         for step_data in sop.steps:
-            print(f"Step {step_data['step']}: {step_data['action']}")
+            requirement = step_data.get('requirement', 'SHOULD')
+            req_symbol = {
+                'MUST': '🔴',
+                'SHOULD': '🟡',
+                'MAY': '🟢'
+            }.get(requirement, '⚪')
+
+            print(f"\nStep {step_data['step']} [{req_symbol} {requirement}]: {step_data['action']}")
             print(f"  Tools: {', '.join(step_data['tools'])}")
 
             # Execute tools for this step

@@ -72,6 +72,14 @@ The system includes 5 SOPs:
 
 ## SOP Structure
 
+Each SOP uses **RFC 2119-style requirement levels**:
+
+- **MUST** 🔴 - Required, cannot be skipped
+- **SHOULD** 🟡 - Recommended, skip only with good reason
+- **MAY** 🟢 - Optional, context-dependent
+- **MUST NOT** - Actions that must be avoided
+- **SHOULD NOT** - Actions generally to avoid
+
 ```json
 {
   "id": "logstash-pipeline-degraded",
@@ -80,6 +88,7 @@ The system includes 5 SOPs:
   "steps": [
     {
       "step": 1,
+      "requirement": "MUST",
       "action": "Check current throughput",
       "tools": ["search_logstash_throughput"],
       "check_for": "Current vs average throughput",
@@ -87,9 +96,22 @@ The system includes 5 SOPs:
     },
     {
       "step": 2,
-      "action": "Search for errors",
-      "tools": ["search_logstash_errors"],
-      "check_for": "Memory, parsing, pipeline errors"
+      "requirement": "SHOULD",
+      "action": "Check resource usage",
+      "tools": ["search_high_memory_services"],
+      "check_for": "Memory/CPU on Logstash nodes"
+    }
+  ],
+  "do_not": [
+    {
+      "requirement": "MUST NOT",
+      "action": "Restart Logstash without checking errors first",
+      "reason": "May lose diagnostic information"
+    },
+    {
+      "requirement": "SHOULD NOT",
+      "action": "Increase heap without confirming memory issue",
+      "reason": "May waste resources if problem is elsewhere"
     }
   ]
 }
@@ -113,6 +135,8 @@ The system includes 5 SOPs:
 - 📝 **Documented** - SOP is the documentation
 - 🔧 **Easy to update** - Just edit JSON
 - 🤖 **No AI guessing** - Clear instructions
+- ⚠️ **Prevents mistakes** - "Do not" guidance avoids common errors
+- 📊 **Prioritized** - MUST/SHOULD/MAY levels show what's critical
 
 ## Integration with Your Agent
 

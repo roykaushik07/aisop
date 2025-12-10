@@ -26,6 +26,7 @@ class SOP:
         self.description = data["description"]
         self.triggers = data.get("triggers", [])
         self.steps = data["steps"]
+        self.do_not = data.get("do_not", [])
 
     def matches(self, user_query: str) -> bool:
         """

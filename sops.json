@@ -13,6 +13,7 @@
       "steps": [
         {
           "step": 1,
+          "requirement": "MUST",
           "action": "Check current throughput and compare to baseline",
           "tools": ["search_logstash_throughput"],
           "check_for": "Current throughput vs average",
@@ -20,6 +21,7 @@
         },
         {
           "step": 2,
+          "requirement": "MUST",
           "action": "Search for Logstash errors",
           "tools": ["search_logstash_errors"],
           "check_for": "OutOfMemory, pipeline errors, parsing errors",
@@ -27,6 +29,7 @@
         },
         {
           "step": 3,
+          "requirement": "SHOULD",
           "action": "Check resource usage (CPU and Memory)",
           "tools": ["search_high_memory_services", "search_high_cpu_services"],
           "check_for": "High memory/CPU on Logstash nodes",
@@ -34,10 +37,23 @@
         },
         {
           "step": 4,
+          "requirement": "SHOULD",
           "action": "Check for recent changes",
           "tools": ["search_recent_deployments"],
           "check_for": "Recent Logstash config or version changes",
           "if_found": "Recent deployment might be the cause"
+        }
+      ],
+      "do_not": [
+        {
+          "requirement": "MUST NOT",
+          "action": "Restart Logstash without checking errors first",
+          "reason": "May lose diagnostic information and mask the root cause"
+        },
+        {
+          "requirement": "SHOULD NOT",
+          "action": "Increase Logstash heap without confirming memory issue",
+          "reason": "May waste resources if the problem is elsewhere"
         }
       ]
     },
@@ -53,6 +69,7 @@
       "steps": [
         {
           "step": 1,
+          "requirement": "MUST",
           "action": "Check current consumer lag",
           "tools": ["search_kafka_consumer_lag"],
           "check_for": "Which consumers have high lag",
@@ -60,6 +77,7 @@
         },
         {
           "step": 2,
+          "requirement": "MUST",
           "action": "Check consumer service for errors",
           "tools": ["search_service_errors"],
           "check_for": "Errors in consumer application logs",
@@ -67,6 +85,7 @@
         },
         {
           "step": 3,
+          "requirement": "SHOULD",
           "action": "Check consumer resource usage",
           "tools": ["search_high_cpu_services", "search_high_memory_services"],
           "check_for": "Consumer services under resource pressure",
@@ -74,10 +93,23 @@
         },
         {
           "step": 4,
+          "requirement": "MAY",
           "action": "Check for recent deployments",
           "tools": ["search_recent_deployments"],
           "check_for": "Recent consumer application changes",
           "if_found": "New version might have performance issues"
+        }
+      ],
+      "do_not": [
+        {
+          "requirement": "MUST NOT",
+          "action": "Scale up consumers without checking why existing ones are slow",
+          "reason": "Will make the problem worse if consumers are buggy or hitting downstream limits"
+        },
+        {
+          "requirement": "SHOULD NOT",
+          "action": "Reset consumer offsets without understanding the root cause",
+          "reason": "May cause duplicate processing or data loss"
         }
       ]
     },
@@ -93,6 +125,7 @@
       "steps": [
         {
           "step": 1,
+          "requirement": "MUST",
           "action": "Find slow queries",
           "tools": ["search_elasticsearch_slow_queries"],
           "check_for": "Specific slow query patterns",
@@ -100,6 +133,7 @@
         },
         {
           "step": 2,
+          "requirement": "SHOULD",
           "action": "Check ES cluster resource usage",
           "tools": ["search_high_cpu_services", "search_high_memory_services"],
           "check_for": "High CPU/memory on ES nodes",
@@ -107,10 +141,28 @@
         },
         {
           "step": 3,
+          "requirement": "MAY",
           "action": "Check for recent changes",
           "tools": ["search_recent_deployments"],
           "check_for": "Recent index changes or mapping updates",
           "if_found": "Recent changes might have affected query performance"
+        }
+      ],
+      "do_not": [
+        {
+          "requirement": "MUST NOT",
+          "action": "Disable slow query logging to 'fix' the problem",
+          "reason": "Hides the symptom without fixing the cause"
+        },
+        {
+          "requirement": "MUST NOT",
+          "action": "Increase ES timeout values without fixing slow queries",
+          "reason": "Masks the problem and may cause resource exhaustion"
+        },
+        {
+          "requirement": "SHOULD NOT",
+          "action": "Add more ES nodes before optimizing queries",
+          "reason": "Inefficient queries will remain slow regardless of cluster size"
         }
       ]
     },
@@ -126,6 +178,7 @@
       "steps": [
         {
           "step": 1,
+          "requirement": "MUST",
           "action": "Check service error logs",
           "tools": ["search_service_errors"],
           "check_for": "Types of errors occurring",
@@ -133,6 +186,7 @@
         },
         {
           "step": 2,
+          "requirement": "SHOULD",
           "action": "Check if network-related",
           "tools": ["search_network_errors"],
           "check_for": "Connection timeouts or refused connections",
@@ -140,6 +194,7 @@
         },
         {
           "step": 3,
+          "requirement": "SHOULD",
           "action": "Check service resource usage",
           "tools": ["search_high_cpu_services", "search_high_memory_services"],
           "check_for": "Service under resource pressure",
@@ -147,6 +202,7 @@
         },
         {
           "step": 4,
+          "requirement": "MUST",
           "action": "Check for recent deployments",
           "tools": ["search_recent_deployments"],
           "check_for": "Recent code changes",
@@ -154,10 +210,23 @@
         },
         {
           "step": 5,
+          "requirement": "MAY",
           "action": "Check active alerts",
           "tools": ["search_alert_history"],
           "check_for": "Related alerts firing",
           "if_found": "Correlate with other ongoing issues"
+        }
+      ],
+      "do_not": [
+        {
+          "requirement": "MUST NOT",
+          "action": "Rollback deployment without confirming it's the cause",
+          "reason": "May rollback unrelated changes and delay finding real issue"
+        },
+        {
+          "requirement": "SHOULD NOT",
+          "action": "Ignore errors if they're below alert threshold",
+          "reason": "Early investigation prevents larger incidents"
         }
       ]
     },
@@ -173,6 +242,7 @@
       "steps": [
         {
           "step": 1,
+          "requirement": "MUST",
           "action": "Identify services with high resource usage",
           "tools": ["search_high_cpu_services", "search_high_memory_services"],
           "check_for": "Which services are affected",
@@ -180,6 +250,7 @@
         },
         {
           "step": 2,
+          "requirement": "MUST",
           "action": "Check for errors in high-resource services",
           "tools": ["search_service_errors"],
           "check_for": "Errors that might cause resource spike",
@@ -187,6 +258,7 @@
         },
         {
           "step": 3,
+          "requirement": "SHOULD",
           "action": "Check for recent deployments",
           "tools": ["search_recent_deployments"],
           "check_for": "Recent changes to affected services",
@@ -194,10 +266,23 @@
         },
         {
           "step": 4,
+          "requirement": "MAY",
           "action": "Check alerts",
           "tools": ["search_alert_history"],
           "check_for": "When did resource usage alerts start",
           "if_found": "Timeline helps identify trigger event"
+        }
+      ],
+      "do_not": [
+        {
+          "requirement": "MUST NOT",
+          "action": "Kill processes without understanding why they're using resources",
+          "reason": "May cause service disruption and doesn't fix root cause"
+        },
+        {
+          "requirement": "SHOULD NOT",
+          "action": "Scale up resources before investigating the cause",
+          "reason": "Wastes money if the issue is a bug or inefficiency"
         }
       ]
     }
