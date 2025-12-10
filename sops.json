@@ -1,0 +1,205 @@
+{
+  "sops": [
+    {
+      "id": "logstash-pipeline-degraded",
+      "name": "Logstash Pipeline Degradation Investigation",
+      "description": "When Logstash throughput drops or pipeline shows errors",
+      "triggers": [
+        "logstash slow",
+        "logstash pipeline",
+        "logstash not processing",
+        "logstash throughput"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Check current throughput and compare to baseline",
+          "tools": ["search_logstash_throughput"],
+          "check_for": "Current throughput vs average",
+          "if_found": "If throughput is low, proceed to check for errors"
+        },
+        {
+          "step": 2,
+          "action": "Search for Logstash errors",
+          "tools": ["search_logstash_errors"],
+          "check_for": "OutOfMemory, pipeline errors, parsing errors",
+          "if_found": "If memory errors, check memory usage next"
+        },
+        {
+          "step": 3,
+          "action": "Check resource usage (CPU and Memory)",
+          "tools": ["search_high_memory_services", "search_high_cpu_services"],
+          "check_for": "High memory/CPU on Logstash nodes",
+          "if_found": "If high memory, this confirms resource issue"
+        },
+        {
+          "step": 4,
+          "action": "Check for recent changes",
+          "tools": ["search_recent_deployments"],
+          "check_for": "Recent Logstash config or version changes",
+          "if_found": "Recent deployment might be the cause"
+        }
+      ]
+    },
+    {
+      "id": "kafka-consumer-lag",
+      "name": "Kafka Consumer Lag Investigation",
+      "description": "When Kafka consumer lag is high",
+      "triggers": [
+        "consumer lag",
+        "kafka lag",
+        "messages not consuming"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Check current consumer lag",
+          "tools": ["search_kafka_consumer_lag"],
+          "check_for": "Which consumers have high lag",
+          "if_found": "Identify specific consumer groups with issues"
+        },
+        {
+          "step": 2,
+          "action": "Check consumer service for errors",
+          "tools": ["search_service_errors"],
+          "check_for": "Errors in consumer application logs",
+          "if_found": "Look for timeout, rebalancing, or processing errors"
+        },
+        {
+          "step": 3,
+          "action": "Check consumer resource usage",
+          "tools": ["search_high_cpu_services", "search_high_memory_services"],
+          "check_for": "Consumer services under resource pressure",
+          "if_found": "Resource constraints may cause slow processing"
+        },
+        {
+          "step": 4,
+          "action": "Check for recent deployments",
+          "tools": ["search_recent_deployments"],
+          "check_for": "Recent consumer application changes",
+          "if_found": "New version might have performance issues"
+        }
+      ]
+    },
+    {
+      "id": "elasticsearch-slow-queries",
+      "name": "Elasticsearch Slow Query Investigation",
+      "description": "When Elasticsearch queries are slow",
+      "triggers": [
+        "elasticsearch slow",
+        "search is slow",
+        "queries timing out"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Find slow queries",
+          "tools": ["search_elasticsearch_slow_queries"],
+          "check_for": "Specific slow query patterns",
+          "if_found": "Identify problematic queries (wildcards, large aggregations)"
+        },
+        {
+          "step": 2,
+          "action": "Check ES cluster resource usage",
+          "tools": ["search_high_cpu_services", "search_high_memory_services"],
+          "check_for": "High CPU/memory on ES nodes",
+          "if_found": "Resource contention affecting query performance"
+        },
+        {
+          "step": 3,
+          "action": "Check for recent changes",
+          "tools": ["search_recent_deployments"],
+          "check_for": "Recent index changes or mapping updates",
+          "if_found": "Recent changes might have affected query performance"
+        }
+      ]
+    },
+    {
+      "id": "service-errors-spike",
+      "name": "Service Error Spike Investigation",
+      "description": "When a service shows spike in errors",
+      "triggers": [
+        "service errors",
+        "high error rate",
+        "service failing"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Check service error logs",
+          "tools": ["search_service_errors"],
+          "check_for": "Types of errors occurring",
+          "if_found": "Identify error patterns (network, database, etc.)"
+        },
+        {
+          "step": 2,
+          "action": "Check if network-related",
+          "tools": ["search_network_errors"],
+          "check_for": "Connection timeouts or refused connections",
+          "if_found": "Network issues with downstream services"
+        },
+        {
+          "step": 3,
+          "action": "Check service resource usage",
+          "tools": ["search_high_cpu_services", "search_high_memory_services"],
+          "check_for": "Service under resource pressure",
+          "if_found": "Resource exhaustion causing errors"
+        },
+        {
+          "step": 4,
+          "action": "Check for recent deployments",
+          "tools": ["search_recent_deployments"],
+          "check_for": "Recent code changes",
+          "if_found": "New deployment might have introduced bugs"
+        },
+        {
+          "step": 5,
+          "action": "Check active alerts",
+          "tools": ["search_alert_history"],
+          "check_for": "Related alerts firing",
+          "if_found": "Correlate with other ongoing issues"
+        }
+      ]
+    },
+    {
+      "id": "high-resource-usage",
+      "name": "High Resource Usage Investigation",
+      "description": "When services show high CPU or memory",
+      "triggers": [
+        "high cpu",
+        "high memory",
+        "resource usage"
+      ],
+      "steps": [
+        {
+          "step": 1,
+          "action": "Identify services with high resource usage",
+          "tools": ["search_high_cpu_services", "search_high_memory_services"],
+          "check_for": "Which services are affected",
+          "if_found": "Focus on services >80% CPU or >85% memory"
+        },
+        {
+          "step": 2,
+          "action": "Check for errors in high-resource services",
+          "tools": ["search_service_errors"],
+          "check_for": "Errors that might cause resource spike",
+          "if_found": "Memory leaks, infinite loops, etc."
+        },
+        {
+          "step": 3,
+          "action": "Check for recent deployments",
+          "tools": ["search_recent_deployments"],
+          "check_for": "Recent changes to affected services",
+          "if_found": "New code might have performance issues"
+        },
+        {
+          "step": 4,
+          "action": "Check alerts",
+          "tools": ["search_alert_history"],
+          "check_for": "When did resource usage alerts start",
+          "if_found": "Timeline helps identify trigger event"
+        }
+      ]
+    }
+  ]
+}
